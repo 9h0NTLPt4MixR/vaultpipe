@@ -85,3 +85,21 @@ func TestWithError_Nil(t *testing.T) {
 		t.Fatal("expected non-nil logger when error is nil")
 	}
 }
+
+// TestWarnLevel verifies that Warn messages appear when the logger is set to
+// WarnLevel, but Info messages are suppressed.
+func TestWarnLevel(t *testing.T) {
+	var buf bytes.Buffer
+	l := logger.New(&buf, logger.LevelWarn)
+
+	l.Info("should be hidden")
+	if strings.Contains(buf.String(), "should be hidden") {
+		t.Error("expected info message to be suppressed at Warn level")
+	}
+
+	buf.Reset()
+	l.Warn("should appear")
+	if !strings.Contains(buf.String(), "should appear") {
+		t.Error("expected warn message to appear at Warn level")
+	}
+}
