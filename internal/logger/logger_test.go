@@ -67,6 +67,24 @@ func TestWithField(t *testing.T) {
 	}
 }
 
+// TestWithField_ChainedFields verifies that multiple calls to WithField
+// accumulate all fields in the output.
+func TestWithField_ChainedFields(t *testing.T) {
+	var buf bytes.Buffer
+	l := logger.New(&buf, logger.LevelDebug)
+	l2 := l.WithField("service", "vault").WithField("env", "prod")
+	l2.Info("chained")
+	if !strings.Contains(buf.String(), "service") {
+		t.Error("expected field key 'service' in output")
+	}
+	if !strings.Contains(buf.String(), "env") {
+		t.Error("expected field key 'env' in output")
+	}
+	if !strings.Contains(buf.String(), "prod") {
+		t.Error("expected field value 'prod' in output")
+	}
+}
+
 func TestWithError(t *testing.T) {
 	var buf bytes.Buffer
 	l := logger.New(&buf, logger.LevelDebug)
