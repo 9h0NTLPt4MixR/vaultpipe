@@ -74,6 +74,19 @@ func TestInject_NoOverwrite(t *testing.T) {
 	}
 }
 
+func TestInject_WithOverwrite(t *testing.T) {
+	os.Setenv("OVERWRITE_KEY", "original")
+	t.Cleanup(func() { os.Unsetenv("OVERWRITE_KEY") })
+
+	inj := NewInjector(WithOverwrite(true))
+	if err := inj.Inject(map[string]string{"overwrite_key": "new_value"}); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got := os.Getenv("OVERWRITE_KEY"); got != "new_value" {
+		t.Errorf("expected OVERWRITE_KEY=new_value after overwrite, got %q", got)
+	}
+}
+
 func TestInjectToMap_DoesNotMutateEnv(t *testing.T) {
 	inj := NewInjector(WithPrefix("app"))
 	result := inj.InjectToMap(map[string]string{"secret": "val"})
