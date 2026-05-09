@@ -16,6 +16,9 @@ func (c *Counter) Inc() { atomic.AddUint64(&c.v, 1) }
 // Value returns the current counter value.
 func (c *Counter) Value() uint64 { return atomic.LoadUint64(&c.v) }
 
+// Reset sets the counter back to zero.
+func (c *Counter) Reset() { atomic.StoreUint64(&c.v, 0) }
+
 // Metrics holds all runtime counters for vaultpipe.
 type Metrics struct {
 	mu sync.RWMutex
@@ -57,4 +60,20 @@ func (m *Metrics) Snapshot() map[string]uint64 {
 		"renewals":         m.Renewals.Value(),
 		"renewal_errors":   m.RenewalErrors.Value(),
 	}
+}
+
+// Reset zeroes all counters. This is useful between test runs or when
+// periodic metric reporting windows need a clean slate.
+func (m *Metrics) Reset() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	m.SecretFetches.Reset()
+	m.FetchErrors.Reset()
+	m.CacheHits.Reset()
+	m.CacheMisses.Reset()
+	m.InjectionsOK.Reset()
+	m.InjectionErrors.Reset()
+	m.Renewals.Reset()
+	m.RenewalErrors.Reset()
 }
